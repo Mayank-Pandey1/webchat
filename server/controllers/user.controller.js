@@ -1,8 +1,8 @@
 import { User } from "../models/user.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js"
-import { asyncHandler } from "../utils/asyncHandlerjs";
-import bcrypt from "bcrypt.js"
+import { asyncHandler } from "../utils/asyncHandler.js";
+import bcrypt from "bcrypt"
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
 const generateAccessAndRefreshToken = async (userId) => {
@@ -55,7 +55,7 @@ const registerUser = asyncHandler(async (req, res) => {
     const createdUser = await User.findById(newUser._id).select("-password -refreshToken")
     if(!createdUser) throw new ApiError(500, "Something went wrong while registering the user")
     
-    const {accessToken, refreshToken} = await generateAccessAndRefreshToken(newUser._id)
+    const {accessToken, refreshToken} = await generateAccessAndRefreshToken(createdUser._id)
 
     const options = {
         httpOnly: true,
@@ -64,7 +64,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     return res.status(200)
                 .cookie("accessToken", accessToken, options)
-                .cookie("accessToken", refreshToken, options)
+                .cookie("refreshToken", refreshToken, options)
                 .json(new ApiResponse(200, {createdUser}, "New user created"))
 })
 
@@ -94,19 +94,23 @@ const loginUser = asyncHandler(async (req, res) => {
 })
 
 const updateProfile = asyncHandler(async (req, res) => {
-    const [profilePic, bio, fullName] = req.body;
+    const { bio, fullName } = req.body;
+
+    const profileImageLocalPath = req.file?.path
+    //console.log(profileImageLocalPath)
+    if(!profileImageLocalPath) throw new ApiError(400, "Profile image not found")
 
     let profileImage;
-    if(profilePic) {
-        profileImage = await uploadOnCloudinary(profilePic)
-        if(!profileImage.url) throw new ApiError("Error while upload on cloudinary")
+    if(profileImageLocalPath) {
+        profileImage = await uploadOnCloudinary(profileImageLocalPath)
+        if(!profileImage?.url) throw new ApiError("Error while upload on cloudinary")
     }
     
     const updateData = {};
 
     if (fullName) updateData.fullName = fullName.trim();
     if (bio) updateData.bio = bio.trim();
-    if(profileImage?.url) updateData.profilePic = profileImage
+    if(profileImage?.url) updateData.profilePic = profileImage?.url
     
     const user = await User.findByIdAndUpdate(req.user._id, 
                                             {$set: updateData}, 
@@ -114,7 +118,7 @@ const updateProfile = asyncHandler(async (req, res) => {
     if(!user) throw new ApiError(500, "Error while updating user profile")
     
     return res.status(200)
-                .json(new ApiResponse(200, user, "User profile update success"))
+                .json(new ApiResponse(200, {updateData}, "User profile update success"))
 })
 
-export {registerUser, loginUser}
+export {registerUser, loginUser, updateProfile}
