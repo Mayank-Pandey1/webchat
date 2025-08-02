@@ -4,6 +4,7 @@ import http from "http"
 import cors from "cors"
 import connectDB from "./db/index.js";
 import { Server } from "socket.io";
+import cookieParser from "cookie-parser";
 
 const app = express();
 const server = http.createServer(app)   //we are using this http server because socket.io suppport this http server
@@ -13,8 +14,9 @@ const port = process.env.PORT || 6000
 //initialize socket.io server
 export const socketio = new Server(server, {
     cors: {
-        origin: "*", // Allow all origins for testing (e.g., Hoppscotch)
-        methods: ["GET", "POST"]
+        origin: "https://zany-dollop-wrr6pw76gx62v474-5173.app.github.dev", 
+        methods: ["GET", "POST", "PUT", "PATCH"],
+        credentials: true
     }})
 
 //store online users
@@ -39,8 +41,12 @@ socketio.on("connection", (socket) => {    //socket is the connection between cl
 
 //middlewares
 app.use(express.json({limit: "4mb"}))   //all the request to this server will be passed using json method
+app.use(cookieParser())
 app.use(express.urlencoded({ extended: true }));
-app.use(cors())    //will allow all url to connect with backend
+app.use(cors({
+    origin: "https://zany-dollop-wrr6pw76gx62v474-5173.app.github.dev",
+    credentials: true
+}))    //will allow url to connect with backend
 app.use("/api/status", (req, res) => {
     res.send("Server is live")
 })

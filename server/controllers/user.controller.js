@@ -65,7 +65,7 @@ const registerUser = asyncHandler(async (req, res) => {
     return res.status(200)
                 .cookie("accessToken", accessToken, options)
                 .cookie("refreshToken", refreshToken, options)
-                .json(new ApiResponse(200, {createdUser}, "New user created"))
+                .json(new ApiResponse(200, {user: createdUser}, "New user created"))
 })
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -88,7 +88,9 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     return res.status(200)
-              .cookie("accessToken", accessToken, options)
+              .cookie("accessToken", accessToken, options)     //send the cookies to frontend and axios will use this 
+              //Axios helps your frontend make API calls to your backend, and:
+            //Automatically includes the cookies (with tokens) only if you tell it to do so
               .cookie("refreshToken", refreshToken, options)
               .json(new ApiResponse(200, {user: loggedInUser}, "User logged in successfully"))
 })
@@ -96,12 +98,9 @@ const loginUser = asyncHandler(async (req, res) => {
 const updateProfile = asyncHandler(async (req, res) => {
     const { bio, fullName } = req.body;
 
-    const profileImageLocalPath = req.file?.path
-    //console.log(profileImageLocalPath)
-    if(!profileImageLocalPath) throw new ApiError(400, "Profile image not found")
-
     let profileImage;
-    if(profileImageLocalPath) {
+    if(req.file?.path) {
+        const profileImageLocalPath = req.file?.path
         profileImage = await uploadOnCloudinary(profileImageLocalPath)
         if(!profileImage?.url) throw new ApiError("Error while upload on cloudinary")
     }
@@ -121,4 +120,31 @@ const updateProfile = asyncHandler(async (req, res) => {
                 .json(new ApiResponse(200, {updateData}, "User profile update success"))
 })
 
-export {registerUser, loginUser, updateProfile}
+const logoutUser = asyncHandler(async (req, res) => {
+    try {
+        const userId = req.user?._id;
+        if (userId) {
+            await User.findByIdAndUpdate(userId, { refreshToken: "" });
+        }
+    } catch (err) {
+        console.warn("Error clearing refresh token from DB", err.message);
+    }
+
+    // Clear cookies on client
+    res.clearCookie("accessToken", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+    });
+    res.clearCookie("refreshToken", {
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+    });
+
+    return res
+        .status(200)
+        .json(new ApiResponse(200, null, "User logged out successfully"));
+})
+
+export {registerUser, loginUser, updateProfile, logoutUser}

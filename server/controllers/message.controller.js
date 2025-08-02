@@ -40,7 +40,11 @@ const getUsersForSidebar = asyncHandler(async (req, res) => {
   }));
 
   return res.status(200)
-            .json(new ApiResponse(200, {enrichedUsers}, "Users fetch success"))
+            .json(new ApiResponse(200,  
+              {
+                users: enrichedUsers,
+                unseenMessages: unseenMap
+              }, "Users fetch success"))
 })
 
 //get all messages for selected user

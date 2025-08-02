@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom"
 import bgImage from "./assets/chat-app-assets/bgImage.svg";
+import { Toaster } from "react-hot-toast"
 
 function App() {
 
@@ -9,6 +10,7 @@ function App() {
       style={{ backgroundImage: `url(${bgImage})` }}
     >
       <div className="w-full min-h-screen">
+        <Toaster position="top-center" reverseOrder={false} />
         <Outlet />
       </div>
     </div>
