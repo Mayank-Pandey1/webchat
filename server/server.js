@@ -34,8 +34,14 @@ socketio.on("connection", (socket) => {    //socket is the connection between cl
 
     socket.on("disconnect", () => {
         console.log(`User with userId ${userId} disconnected`)
-        delete userSocketMap[userId]
-        socketio.emit("getOnlineUsers", Object.keys(userSocketMap))
+
+        setTimeout(() => {
+      // If the socket ID has changed (i.e., reconnected), do nothing
+      if (userSocketMap[userId] === socket.id) {
+        delete userSocketMap[userId];
+        socketio.emit("getOnlineUsers", Object.keys(userSocketMap));
+      }
+    }, 2000); // Wait 2 seconds
     })
 })
 
