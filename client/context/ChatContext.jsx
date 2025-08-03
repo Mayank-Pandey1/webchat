@@ -49,6 +49,7 @@ export const ChatProvider = ({children}) => {
             headers: isFormData
                 ? { "Content-Type": "multipart/form-data" }
                 : { "Content-Type": "application/json" },
+                withCredentials: true, // 🔥 Crucial for sending cookies (accessToken)
             };
 
             const { data } = await axios.post(
