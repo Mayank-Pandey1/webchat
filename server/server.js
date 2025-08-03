@@ -14,7 +14,7 @@ const port = process.env.PORT || 6000
 //initialize socket.io server
 export const socketio = new Server(server, {
     cors: {
-        origin: "https://webchat-frontend-m.onrender.com", 
+        origin: "https://webchat-frontend-p.onrender.com", 
         methods: ["GET", "POST", "PUT", "PATCH"],
         credentials: true
     }})
@@ -50,7 +50,7 @@ app.use(express.json({limit: "4mb"}))   //all the request to this server will be
 app.use(cookieParser())
 app.use(express.urlencoded({ extended: true }));
 app.use(cors({
-    origin: "https://webchat-frontend-m.onrender.com",
+    origin: "https://webchat-frontend-p.onrender.com",
     credentials: true
 }))    //will allow url to connect with backend
 app.use("/api/status", (req, res) => {
