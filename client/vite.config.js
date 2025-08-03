@@ -11,7 +11,7 @@ export default defineConfig({
   preview: {
     host: '0.0.0.0',
     port: 4173, // or your port
-    allowedHosts: ['webchat-frontend-m.onrender.com'], // ← Add your Render domain here
+    allowedHosts: ["webchat-frontend-m.onrender.com"], // ← Add your Render domain here
   },
   plugins: [react(), tailwindcss()],
 })
